@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import random
 
-GROUND = 0
-WATER = 2
-WALL = 1
 MAX_BULLETS = 3
 RELOAD_SPEED = 1
 NUM_TERRAIN = 3
@@ -16,17 +13,11 @@ class action:
     def __init__(self, _type, _dir, _enc):
         self.type = _type
         self.dir = _dir
-        self.enc = self.encode()
-    def encode(self):
-        count = 0
-        for type in ['MOVE', 'SHOOT']:
-            for dir in ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw', 'none']:
-                if type == self.type and dir == self.dir:
-                    return count
-                else:
-                    count += 1
-        print('Something went wrong! Action is not valid.')
-        quit()
+        self.enc = _enc
+    def __str__(self):
+        return '%s %s' % (self.type, self.dir)
+    def __repr__(self):
+        return '%s %s' % (self.type, self.dir)
 
 action_dict = { 0: action('MOVE', 'n', 0),
                 1: action('MOVE', 'ne', 1),
@@ -64,18 +55,16 @@ class bullet:
         self.loc = _loc
         self.dir = _dir
     def step(self):
-        print(self.loc)
-        print(self.dir)
         self.loc =  self.loc + self.dir
 
 class agent():
-    def __init__(self, _loc, _id, _user=False):
+    def __init__(self, _loc, _user=False):
         self.loc = _loc
-        self.id = _id
         self.user = _user
         self.bullets = {}
-        self.bullet_count = MAX_BULLETS
-        self.index = 0
+        self.bullet_id = 0
+        self.bullet_cap = MAX_BULLETS
+        self.bullet_timer = 0
         self.is_dead = False
     def step(self, map, a_idx):
         a = action_dict[a_idx]
@@ -85,18 +74,19 @@ class agent():
             # update bullets[key]
             self.bullets[key].step()
             index = self.bullets[key].loc
-            if map[index.r, index.c] == WALL:
+            if terrain_dict[map[index.r, index.c]] == 'WALL':
                 del_keys.append(key)
         for key in del_keys:
             del self.bullets[key]
         if self.loc != loc(-1,-1):
+            self.reload()
             # step current action
             if a.type == 'SHOOT':
                 bullet_loc = self.loc + dir_dict[a.dir]
-                self.bullets[self.index] = bullet(bullet_loc, dir_dict[a.dir])
-                self.index += 1
-                self.bullet_count -= 1
-                if self.bullet_count < 0:
+                self.bullets[self.bullet_id] = bullet(bullet_loc, dir_dict[a.dir])
+                self.bullet_id += 1
+                self.bullet_cap -= 1
+                if self.bullet_cap < 0:
                     print('Something went wrong! Bullet count < 0.')
                     quit()
                 else:
@@ -108,8 +98,15 @@ class agent():
         else:
             None
     def reload(self):
-        self.bullet_count = max(self.bullet_count+1, MAX_BULLETS)
-
+        if self.bullet_cap < MAX_BULLETS:
+            self.bullet_timer += 1
+            if self.bullet_timer == RELOAD_SPEED:
+                self.bullet_cap += 1
+                self.bullet_timer = 0
+            else:
+                None
+        else:
+            self.bullet_timer = 0
 
 class Env():
     def __init__(
@@ -123,6 +120,7 @@ class Env():
         print('Creating an environment...')
         print('Reading %s.txt...' % (_map))
         self.height, self.width = _dim
+        self.dim = _dim
         self.terrain = np.zeros((NUM_TERRAIN-1,self.height,self.width))
         self.map = np.zeros((self.height,self.width))
         for i in range(1, NUM_TERRAIN):
@@ -156,37 +154,34 @@ class Env():
         self.agents = {}
         # instantiate all agents
         for i in range(0, self.num_agents):
-            self.agents[i] = agent(loc_dict[i], i, self.user==i)
+            self.agents[i] = agent(loc_dict[i], self.user==i)
             print('Added Agent %s at %s' % (str(i), self.agents[i].loc))
-        self.time = 0
         self.alive = np.arange(0, self.num_agents)
     def step(self, action_list):
         for i in range(0, self.num_agents):
             self.agents[i].step(self.map, action_list[i])
-            if self.time % RELOAD_SPEED == 0:
-                self.agents[i].reload()
-        self.time += 1
-    def is_valid(self, index, source):
+        return self.reward()
+    def is_valid(self, index, agent):
         a = action_dict[index]
-        dest = source + dir_dict[a.dir]
+        dest = agent.loc + dir_dict[a.dir]
         if a.type == 'MOVE':
             if terrain_dict[self.map[dest.r, dest.c]] == 'GROUND':
                 return True
             else:
                 return False
         elif a.type == 'SHOOT':
-            if terrain_dict[self.map[dest.r, dest.c]] == 'GROUND' or \
-            terrain_dict[self.map[dest.r, dest.c]] == 'WATER':
+            if (terrain_dict[self.map[dest.r, dest.c]] == 'GROUND' \
+            or terrain_dict[self.map[dest.r, dest.c]] == 'WATER') \
+            and agent.bullet_cap > 0:
                 return True
             else:
                 return False
         else:
             print('Invalid action type.')
     def action_space(self, agent_id):
-        source = self.agents[agent_id].loc
         valid_actions = []
         for i in range(0, len(action_dict)):
-            append = self.is_valid(i, source)
+            append = self.is_valid(i, self.agents[agent_id])
             if append:
                 valid_actions.append(i)
             else:
@@ -212,12 +207,13 @@ class Env():
             agents.append(a.loc.tuple())
             for key_b, b in self.agents[key_a].bullets.items():
                 bullets.append(b.loc.tuple())
-        print(agents)
-        print(bullets)
         common = (set(agents) & set(bullets))
         for i in range(0, len(agents)):
             if len(self.alive) == 1:
                 print('Agent %s is the winner!' % (str(i)))
+                quit()
+            elif len(self.alive) == 0:
+                print('No agent wins!')
                 quit()
             elif agents[i] in common:
                 self.alive = np.delete(self.alive, i)
@@ -228,3 +224,4 @@ class Env():
                 reward.append(0)
             else:
                 reward.append(0)
+        return reward
