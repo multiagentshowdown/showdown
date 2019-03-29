@@ -3,7 +3,7 @@ import time
 import random
 from math import ceil, floor
 
-SHUFFLE_COLORS = False
+SHUFFLE_COLORS = True
 # colors
 GROUND_C = (246, 169, 125)
 WALL_C = (235, 116, 86)

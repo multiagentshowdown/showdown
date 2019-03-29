@@ -216,7 +216,7 @@ class Env():
                 print('No agent wins!')
                 quit()
             elif agents[i] in common:
-                self.alive = np.delete(self.alive, i)
+                self.alive = self.alive[self.alive != i]
                 self.agents[i].is_dead = True
                 self.agents[i].loc = loc(-1,-1)
                 reward.append(-1)
@@ -224,4 +224,5 @@ class Env():
                 reward.append(0)
             else:
                 reward.append(0)
+        print(self.alive)
         return reward
