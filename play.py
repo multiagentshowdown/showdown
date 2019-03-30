@@ -5,14 +5,14 @@ from render import *
 
 NUM_AGENTS = 4
 ENV = 'env_0'
-loc_dict = {0: loc(1,1), 1: loc(5,5), 2: loc(5,1), 3: loc(1,5)}
-DIM = (7,7)
+loc_dict = {0: loc(1, 1), 1: loc(5, 5), 2: loc(5, 1), 3: loc(1, 5)}
+DIM = (7, 7)
 SCALE = 25
 
 # setup env
 e = Env(NUM_AGENTS, ENV, DIM, _loc_dict=loc_dict, _obs_type='one_hot')
 # initialize pygame
-window = window(SCALE, (e.height,e.width))
+window = window(SCALE, (e.height, e.width))
 
 policies = {}
 for i in range(0, e.num_agents):

@@ -14,6 +14,7 @@ NUM_TERRAIN = 3
 # terrain dictionary
 terrain_dict = {0: 'GROUND', 1: 'WALL', 2: 'WATER'}
 
+
 class Action:
     """
     This class is used to describe an action.
@@ -23,6 +24,7 @@ class Action:
         dir: The direction or trajectory of an action.
         enc: The encoding of an action to convert back to an integer.
     """
+
     def __init__(self, _type, _dir, _enc):
         """
         The constructor for Action class.
@@ -30,44 +32,51 @@ class Action:
         self.type = _type
         self.dir = _dir
         self.enc = _enc
+
     def __str__(self):
         return '%s %s' % (self.type, self.dir)
+
     def __repr__(self):
         return '%s %s' % (self.type, self.dir)
 
+
 # conversion between Action class and its corresponding integer encoding
-action_dict = { 0: Action('MOVE', 'n', 0),
-                1: Action('MOVE', 'ne', 1),
-                2: Action('MOVE', 'e', 2),
-                3: Action('MOVE', 'se', 3),
-                4: Action('MOVE', 's', 4),
-                5: Action('MOVE', 'sw', 5),
-                6: Action('MOVE', 'w', 6),
-                7: Action('MOVE', 'nw', 7),
-                8: Action('MOVE', 'none', 8),
-                9: Action('SHOOT', 'n', 9),
-                10: Action('SHOOT', 'ne', 10),
-                11: Action('SHOOT', 'e', 11),
-                12: Action('SHOOT', 'se', 12),
-                13: Action('SHOOT', 's', 13),
-                14: Action('SHOOT', 'sw', 14),
-                15: Action('SHOOT', 'w', 15),
-                16: Action('SHOOT', 'nw', 16)}
+action_dict = {
+    0: Action('MOVE', 'n', 0),
+    1: Action('MOVE', 'ne', 1),
+    2: Action('MOVE', 'e', 2),
+    3: Action('MOVE', 'se', 3),
+    4: Action('MOVE', 's', 4),
+    5: Action('MOVE', 'sw', 5),
+    6: Action('MOVE', 'w', 6),
+    7: Action('MOVE', 'nw', 7),
+    8: Action('MOVE', 'none', 8),
+    9: Action('SHOOT', 'n', 9),
+    10: Action('SHOOT', 'ne', 10),
+    11: Action('SHOOT', 'e', 11),
+    12: Action('SHOOT', 'se', 12),
+    13: Action('SHOOT', 's', 13),
+    14: Action('SHOOT', 'sw', 14),
+    15: Action('SHOOT', 'w', 15),
+    16: Action('SHOOT', 'nw', 16)
+}
 
 # conversion between direction string and 2d coordinate offset
-dir_dict = {'n': loc(-1,0),
-            'ne': loc(-1,1),
-            'e': loc(0,1),
-            'se': loc(1,1),
-            's': loc(1,0),
-            'sw': loc(1,-1),
-            'w': loc(0,-1),
-            'nw': loc(-1,-1),
-            'none': loc(0,0)}
+dir_dict = {
+    'n': loc(-1, 0),
+    'ne': loc(-1, 1),
+    'e': loc(0, 1),
+    'se': loc(1, 1),
+    's': loc(1, 0),
+    'sw': loc(1, -1),
+    'w': loc(0, -1),
+    'nw': loc(-1, -1),
+    'none': loc(0, 0)
+}
 
 # conversion between observation type string and integer encoding
-obs_dict = {'raw_pix': 0,
-            'one_hot': 1}
+obs_dict = {'raw_pix': 0, 'one_hot': 1}
+
 
 class Bullet:
     """
@@ -77,17 +86,20 @@ class Bullet:
         loc: The current location of a bullet.
         dir: The trajectory of a bullet.
     """
+
     def __init__(self, _loc, _dir):
         """
         The constructor for Bullet class.
         """
         self.loc = _loc
         self.dir = _dir
+
     def step(self):
         """
         The function to update the location of a bullet.
         """
-        self.loc =  self.loc + self.dir
+        self.loc = self.loc + self.dir
+
 
 class Agent():
     """
@@ -102,6 +114,7 @@ class Agent():
         bullet_timer: The timer keeps track of when a bullet should be reloaded.
         is_dead: The flag indicating whether an agent is dead (T) or alive (F).
     """
+
     def __init__(self, _loc, _user=False):
         """
         The constructor for Agent class.
@@ -113,6 +126,7 @@ class Agent():
         self.bullet_cap = MAX_BULLETS
         self.bullet_timer = 0
         self.is_dead = False
+
     def step(self, map, action_index):
         """
         The function to step an agent.
@@ -133,7 +147,7 @@ class Agent():
         for key in del_keys:
             del self.bullets[key]
         # if an agent.is_dead == False, step current action
-        if self.loc != loc(-1,-1):
+        if self.loc != loc(-1, -1):
             # reload if an agent satisfies the conditions
             self.reload()
             # step current action
@@ -141,7 +155,8 @@ class Agent():
                 # calculate the location of a new bullet
                 bullet_loc = self.loc + dir_dict[action.dir]
                 # add Bullet to bullets
-                self.bullets[self.bullet_id] = Bullet(bullet_loc, dir_dict[action.dir])
+                self.bullets[self.bullet_id] = Bullet(bullet_loc,
+                                                      dir_dict[action.dir])
                 # increment id for the next Bullet
                 self.bullet_id += 1
                 # one bullet is decremented (used up) from capacity
@@ -160,6 +175,7 @@ class Agent():
                 None
         else:
             None
+
     def reload(self):
         # check if the current capacity is less than the max capacity
         if self.bullet_cap < MAX_BULLETS:
@@ -172,6 +188,7 @@ class Agent():
         # if current capacity == full capacity, don't do anything
         else:
             self.bullet_timer = 0
+
 
 class Env():
     """
@@ -188,25 +205,27 @@ class Env():
         loc_dict: The dictoonary to store the starting locations of all agents.
         action_history: The list to store the action history of all agents.
     """
-    def __init__(
-            self,
-            _num_agents,
-            _map,
-            _dim,
-            _loc_dict=None,
-            _user=None,
-            _obs_type=None):
+
+    def __init__(self,
+                 _num_agents,
+                 _map,
+                 _dim,
+                 _loc_dict=None,
+                 _user=None,
+                 _obs_type=None):
         """
         The constructor for Env class.
         """
         print('Creating an environment...')
         print('Reading %s.txt...' % (_map))
         self.height, self.width = _dim
-        self.terrain = np.zeros((NUM_TERRAIN-1,self.height,self.width))
-        self.map = np.zeros((self.height,self.width))
+        self.terrain = np.zeros((NUM_TERRAIN - 1, self.height, self.width))
+        self.map = np.zeros((self.height, self.width))
         for i in range(1, NUM_TERRAIN):
-            self.terrain[i-1,:,:] += pd.read_csv(_map + '_' + terrain_dict[i] + '.txt', header=None).values
-            self.map += i * self.terrain[i-1,:,:]
+            self.terrain[i - 1, :, :] += pd.read_csv(
+                'environment/' + _map + '_' + terrain_dict[i] + '.txt',
+                header=None).values
+            self.map += i * self.terrain[i - 1, :, :]
         print('Height: %s; Width: %s' % (str(self.height), str(self.width)))
         self.num_agents = _num_agents
         print('Number of agents: %s' % (str(self.num_agents)))
@@ -217,11 +236,12 @@ class Env():
             self.loc_dict = {}
             for i in range(0, self.num_agents):
                 r, c = 0, 0
-                while terrain_dict[self.map[r,c]] != 'GROUND' or loc(r,c) in locs:
-                    r = random.randint(0, self.height-1)
-                    c = random.randint(0, self.width-1)
-                locs.append(loc(r,c))
-                self.loc_dict[i] = loc(r,c)
+                while terrain_dict[self.map[r, c]] != 'GROUND' or loc(
+                        r, c) in locs:
+                    r = random.randint(0, self.height - 1)
+                    c = random.randint(0, self.width - 1)
+                locs.append(loc(r, c))
+                self.loc_dict[i] = loc(r, c)
         else:
             self.loc_dict = _loc_dict
         if _user is not None:
@@ -235,10 +255,11 @@ class Env():
         self.agents = {}
         # instantiate all agents
         for i in range(0, self.num_agents):
-            self.agents[i] = Agent(self.loc_dict[i], self.user==i)
+            self.agents[i] = Agent(self.loc_dict[i], self.user == i)
             print('Added Agent %s at %s' % (str(i), self.agents[i].loc))
         self.alive = np.arange(0, self.num_agents)
         self.action_history = []
+
     def step(self, action_list):
         """
         The function to update the actions of all agents indicated by action_list.
@@ -251,6 +272,7 @@ class Env():
             self.agents[i].step(self.map, action_list[i])
         reward, done = self.reward()
         return self.observation(), reward, done
+
     def is_valid(self, index, agent):
         """
         The function to check whether an action is legal or not.
@@ -266,14 +288,15 @@ class Env():
             else:
                 return False
         elif a.type == 'SHOOT':
-            if (terrain_dict[self.map[dest.r, dest.c]] == 'GROUND' \
-            or terrain_dict[self.map[dest.r, dest.c]] == 'WATER') \
-            and agent.bullet_cap > 0:
+            if (terrain_dict[self.map[dest.r, dest.c]] == 'GROUND'
+                    or terrain_dict[self.map[dest.r, dest.c]] == 'WATER'
+                ) and agent.bullet_cap > 0:
                 return True
             else:
                 return False
         else:
             print('Invalid action type.')
+
     def action_space(self, agent_id):
         """
         The function to return all possible valid actions of an agent.
@@ -283,7 +306,7 @@ class Env():
         """
         valid_actions = []
         # if agent.is_dead == True, action = move none (8)
-        if self.agents[agent_id].loc == loc(-1,-1):
+        if self.agents[agent_id].loc == loc(-1, -1):
             valid_actions.append(8)
         else:
             for i in range(0, len(action_dict)):
@@ -293,6 +316,7 @@ class Env():
                 else:
                     None
         return valid_actions
+
     def observation(self):
         """
         The function to return one type of observation of the environment.
@@ -306,7 +330,8 @@ class Env():
         # one-hot encoded observation
         elif obs_dict[self.obs_type] == 1:
             # initialize a numpy array
-            obs = np.zeros((self.num_agents * 2 + NUM_TERRAIN-1, self.height, self.width))
+            obs = np.zeros((self.num_agents * 2 + NUM_TERRAIN - 1, self.height,
+                            self.width))
             # encode agent locations
             for a_key, a in self.agents.items():
                 obs[a_key, a.loc.r, a.loc.c] = 1
@@ -315,8 +340,10 @@ class Env():
                     obs[self.num_agents + a_key, b.loc.r, b.loc.c] = 1
             # encode terrain locations
             for i in range(1, NUM_TERRAIN):
-                obs[self.num_agents * 2 + (i - 1),:,:] = self.terrain[i-1,:,:]
+                obs[self.num_agents * 2 +
+                    (i - 1), :, :] = self.terrain[i - 1, :, :]
             return obs.astype(int)
+
     def reward(self):
         """
         The function to return a list of rewards where each element corresponds \
@@ -353,10 +380,10 @@ class Env():
             elif agents[i] in common:
                 self.alive = self.alive[self.alive != i]
                 self.agents[i].is_dead = True
-                self.agents[i].loc = loc(-1,-1)
+                self.agents[i].loc = loc(-1, -1)
                 reward[i] = -1
             # if an agent is already dead
-            elif agents[i] == (-1,-1):
+            elif agents[i] == (-1, -1):
                 reward[i] = 0
             # if nothing else happens
             else:
