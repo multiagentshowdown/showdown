@@ -12,7 +12,7 @@ SCALE = 25
 # setup env
 e = Env(NUM_AGENTS, ENV, DIM, _loc_dict=loc_dict, _obs_type='one_hot')
 # initialize pygame
-window = render(SCALE, e.dim)
+window = window(SCALE, (e.height,e.width))
 
 policies = {}
 for i in range(0, e.num_agents):
@@ -30,4 +30,9 @@ for n in range(0, 10000):
         opt_action = policies[i].action(action_space)
         action_list.append(opt_action)
         print(action_dict[opt_action])
-    e.step(action_list)
+    observation, reward, done = e.step(action_list)
+    for i in range(0, e.num_agents):
+        print('Agent %s: %s' % (str(i), str(e.agents[i].bullet_cap)))
+    if done:
+        print(reward)
+        quit()

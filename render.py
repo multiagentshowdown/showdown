@@ -3,15 +3,14 @@ import time
 import random
 from math import ceil, floor
 
-SHUFFLE_COLORS = True
+SAMPLE_COLORS = True
 # colors
 GROUND_C = (246, 169, 125)
 WALL_C = (235, 116, 86)
 WATER_C = (31, 152, 223)
-AGENT_C = [(230, 25, 75), (245, 130, 48), (255, 225, 25), (210, 245, 60), \
-           (60, 180, 75), (0, 0 , 128), (145, 30, 180), (240, 50, 230), \
-           (128, 128, 128)]
-if SHUFFLE_COLORS:
+AGENT_C = [(230, 25, 75), (245, 130, 48), (255, 225, 25), (60, 180, 75), \
+           (0, 0 , 128), (145, 30, 180), (240, 50, 230), (128, 128, 128)]
+if SAMPLE_COLORS:
     AGENT_C = random.sample(AGENT_C, len(AGENT_C))
 BULLET_C = []
 for i in range(0, len(AGENT_C)):
@@ -22,7 +21,7 @@ for i in range(0, len(AGENT_C)):
 
 terrain_dict = {0: 'GROUND', 1: 'WALL', 2: 'WATER'}
 
-class render:
+class window:
     def __init__(self, _scale, _dim):
         pygame.init()
         self.scale = _scale
