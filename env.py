@@ -376,7 +376,8 @@ class Env():
                 done = True
                 reward[i] = 0
                 break
-            # if a bullet and an agent are in the same location, that agent is dead
+            # if a bullet and an agent are in the same location, that agent is
+            # dead
             elif agents[i] in common:
                 self.alive = self.alive[self.alive != i]
                 self.agents[i].is_dead = True
